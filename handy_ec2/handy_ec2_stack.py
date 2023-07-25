@@ -1,11 +1,14 @@
 from aws_cdk import (
-    # Duration,
     Stack,
     aws_ec2 as ec2,
     aws_autoscaling as autoscaling
-    # aws_sqs as sqs,
 )
 from constructs import Construct
+
+try:
+    from handy_ec2.settings import SG_PREFIX_LIST
+except ImportError:
+    SG_PREFIX_LIST = None
 
 class HandyEc2Stack(Stack):
 
@@ -16,8 +19,12 @@ class HandyEc2Stack(Stack):
             vpc=default_vpc,
             security_group_name="PublicHandyEC2",
             description="Managed by CDK HandyEc2Stack")
-        public_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22), "SSH")
-        public_sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(3389), "Remote Desktop")
+        if SG_PREFIX_LIST:
+            peer = ec2.Peer.prefix_list(SG_PREFIX_LIST)
+        else:
+            peer = ec2.Peer.any_ipv4()
+        public_sg.add_ingress_rule(peer, ec2.Port.tcp(22), "SSH")
+        public_sg.add_ingress_rule(peer, ec2.Port.tcp(3389), "Remote Desktop")
         windows = ec2.WindowsImage(ec2.WindowsVersion.WINDOWS_SERVER_2022_CHINESE_SIMPLIFIED_FULL_BASE)
         autoscaling.AutoScalingGroup(self, "ASG",
             auto_scaling_group_name="HandyEC2ASG",

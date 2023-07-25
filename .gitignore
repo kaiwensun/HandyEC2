@@ -9,3 +9,6 @@ cdk.context.json
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+# info shouldn't be published
+handy_ec2/settings.py
