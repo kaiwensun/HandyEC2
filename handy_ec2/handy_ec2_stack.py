@@ -6,10 +6,8 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-try:
-    from handy_ec2.settings import SG_PREFIX_LIST
-except ImportError:
-    SG_PREFIX_LIST = None
+# https://w.amazon.com/bin/view/Users/kaiwens/#Hregionalsecuritygroupinternalprefixlist
+from handy_ec2.settings import SG_REGIONAL_PREFIX_LIST
 
 class HandyEc2Stack(Stack):
 
@@ -20,8 +18,9 @@ class HandyEc2Stack(Stack):
             vpc=default_vpc,
             security_group_name="PublicHandyEC2",
             description="Managed by CDK HandyEc2Stack")
-        if SG_PREFIX_LIST:
-            peer = ec2.Peer.prefix_list(SG_PREFIX_LIST)
+        sg_prefix_list = SG_REGIONAL_PREFIX_LIST[self.region]
+        if sg_prefix_list:
+            peer = ec2.Peer.prefix_list(sg_prefix_list)
         else:
             peer = ec2.Peer.any_ipv4()
         public_sg.add_ingress_rule(peer, ec2.Port.tcp(22), "SSH")
