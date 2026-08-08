@@ -1,8 +1,10 @@
 from aws_cdk import (
     Stack,
+    CfnOutput,
     aws_ec2 as ec2,
     aws_autoscaling as autoscaling,
-    aws_iam as iam
+    aws_iam as iam,
+    aws_secretsmanager as secretsmanager
 )
 from constructs import Construct
 
@@ -33,6 +35,23 @@ class HandyEc2Stack(Stack):
         )
         instance_profile.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedEC2InstanceDefaultPolicy"))
 
+        windows_password_secret = secretsmanager.Secret(self, "WindowsPasswordSecret",
+            secret_name=f"{construct_id}/WindowsAdministratorPassword",
+            generate_secret_string=secretsmanager.SecretStringGenerator(
+                password_length=32,
+                exclude_characters="\"'`\\@/ "
+            )
+        )
+        windows_password_secret.grant_read(instance_profile)
+
+        set_password_commands = [
+            f'$password = (Get-SECSecretValue -SecretId {windows_password_secret.secret_arn}).SecretString',
+            '$secureString = ConvertTo-SecureString $password -AsPlainText -Force',
+            'Get-LocalUser -Name "Administrator" | Set-LocalUser -Password $secureString'
+        ]
+        user_data = ec2.UserData.for_windows()
+        user_data.add_commands(*set_password_commands)
+
         autoscaling.AutoScalingGroup(self, "ASG",
             auto_scaling_group_name="HandyEC2ASG",
             vpc=default_vpc,
@@ -43,6 +62,9 @@ class HandyEc2Stack(Stack):
             min_capacity=1,
             max_capacity=1,
             key_name=f"{self.account}-{self.region}-ec2-keypair",
-            role=instance_profile
+            role=instance_profile,
+            user_data=user_data
         )
-        
+
+        CfnOutput(self, "WindowsPasswordSecretArn", value=windows_password_secret.secret_arn)
+

@@ -55,4 +55,13 @@ command.
  * `cdk diff`        compare deployed stack with current state
  * `cdk docs`        open CDK documentation
 
+## Scripts
+
+ * `bin/export-profile.sh <profile>` — export AWS credentials from an AWS CLI profile into the current shell
+ * `bin/get-password.sh` — print the Windows Administrator password and public DNS of the running instance
+ * `bin/set-password.sh` — prompt for a new password, update it, and apply it to the running instance immediately
+ * `bin/get-rdp.sh [output-path]` — write an `.rdp` file for the running instance (default: `~/Downloads/HandyEC2.rdp`)
+ * `bin/allow-my-ip.sh [ip]` — allow an IP (default: your current public IP) to access the instance over SSH/RDP
+ * `bin/allow-my-ip.sh --clean` — revoke all IPs previously allowed by `allow-my-ip.sh`
+
 Enjoy!
