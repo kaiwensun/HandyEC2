@@ -7,8 +7,8 @@ if [[ -z "${new_password}" ]]; then
     exit 1
 fi
 
-secret_id="HandyEc2Stack/WindowsAdministratorPassword"
-instance_id=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names HandyEC2ASG --query "AutoScalingGroups[0].Instances[0].InstanceId" --output text`
+secret_id="WindowsEc2Stack/WindowsAdministratorPassword"
+instance_id=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names WindowsEC2ASG --query "AutoScalingGroups[0].Instances[0].InstanceId" --output text`
 
 aws secretsmanager put-secret-value --secret-id "${secret_id}" --secret-string "${new_password}" > /dev/null
 

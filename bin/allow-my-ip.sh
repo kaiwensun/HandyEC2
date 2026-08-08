@@ -2,9 +2,26 @@
 
 rule_description="allow-my-ip.sh"
 
-sg_id=`aws ec2 describe-security-groups --filters "Name=group-name,Values=PublicHandyEC2" --query "SecurityGroups[0].GroupId" --output text`
+target="${1}"
+case "${target}" in
+    windows)
+        sg_name="PublicWindowsEC2"
+        ports=(22 3389)
+        ;;
+    linux)
+        sg_name="PublicLinuxEC2"
+        ports=(22)
+        ;;
+    *)
+        echo "Usage: $0 <windows|linux> [ip|--clean]"
+        exit 1
+        ;;
+esac
+shift
+
+sg_id=`aws ec2 describe-security-groups --filters "Name=group-name,Values=${sg_name}" --query "SecurityGroups[0].GroupId" --output text`
 if [[ -z "${sg_id}" || "${sg_id}" == "None" ]]; then
-    echo "Security group PublicHandyEC2 not found"
+    echo "Security group ${sg_name} not found"
     exit 1
 fi
 
@@ -31,11 +48,11 @@ if [[ -z "${target_ip}" ]]; then
 fi
 cidr="${target_ip}/32"
 
-for port in 22 3389; do
+for port in "${ports[@]}"; do
     aws ec2 authorize-security-group-ingress \
         --group-id "${sg_id}" \
         --ip-permissions "IpProtocol=tcp,FromPort=${port},ToPort=${port},IpRanges=[{CidrIp=${cidr},Description=${rule_description}}]" \
         2>&1 | grep -v "InvalidPermission.Duplicate"
 done
 
-echo "Allowed ${cidr} on ${sg_id} (ports 22, 3389)"
+echo "Allowed ${cidr} on ${sg_id} (ports ${ports[*]})"
