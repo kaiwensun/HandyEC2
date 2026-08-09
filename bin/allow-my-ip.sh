@@ -6,14 +6,21 @@ target="${1}"
 case "${target}" in
     windows)
         sg_name="PublicWindowsEC2"
+        protocol="tcp"
         ports=(22 3389)
         ;;
     linux)
         sg_name="PublicLinuxEC2"
+        protocol="tcp"
         ports=(22)
         ;;
+    wireguard)
+        sg_name="PublicLinuxEC2"
+        protocol="udp"
+        ports=(51820)
+        ;;
     *)
-        echo "Usage: $0 <windows|linux> [ip|--clean]"
+        echo "Usage: $0 <windows|linux|wireguard> [ip|--clean]"
         exit 1
         ;;
 esac
@@ -51,7 +58,7 @@ cidr="${target_ip}/32"
 for port in "${ports[@]}"; do
     aws ec2 authorize-security-group-ingress \
         --group-id "${sg_id}" \
-        --ip-permissions "IpProtocol=tcp,FromPort=${port},ToPort=${port},IpRanges=[{CidrIp=${cidr},Description=${rule_description}}]" \
+        --ip-permissions "IpProtocol=${protocol},FromPort=${port},ToPort=${port},IpRanges=[{CidrIp=${cidr},Description=${rule_description}}]" \
         2>&1 | grep -v "InvalidPermission.Duplicate"
 done
 

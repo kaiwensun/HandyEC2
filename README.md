@@ -65,7 +65,9 @@ command.
  * `bin/set-password.sh` — prompt for a new password, update it, and apply it to the running Windows instance immediately
  * `bin/get-rdp.sh [output-path]` — write an `.rdp` file for the running Windows instance (default: `~/Downloads/WindowsEC2.rdp`)
  * `bin/get-linux-info.sh` — print the public DNS and SSH command for the running Linux instance
- * `bin/allow-my-ip.sh <windows|linux> [ip]` — allow an IP (default: your current public IP) to access that instance over SSH/RDP
- * `bin/allow-my-ip.sh <windows|linux> --clean` — revoke all IPs previously allowed by `allow-my-ip.sh` for that stack
+ * `bin/allow-my-ip.sh <windows|linux|wireguard> [ip]` — allow an IP (default: your current public IP) to access that instance over SSH/RDP/WireGuard
+ * `bin/allow-my-ip.sh <windows|linux|wireguard> --clean` — revoke all IPs previously allowed by `allow-my-ip.sh` for that target
+
+See [wireguard/README.md](wireguard/README.md) for the ad-hoc VPN on the Linux instance.
 
 Enjoy!
