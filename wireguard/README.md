@@ -34,10 +34,19 @@ The official WireGuard Mac app (App Store) can't scan a QR code shown on the sam
 
 To turn the VPN server off (e.g. when not travelling), run `wireguard/stop-server.sh`. Existing peers stay configured; running `wireguard/setup-server.sh` again brings it back up.
 
+### Managing clients
+
+* `wireguard/list-clients.sh` — list all configured peers with their internal IP and last handshake time
+* `wireguard/remove-client.sh <name>` — revoke a device's access; its old QR code/config text stops working immediately, other peers are unaffected
+
+A peer never expires on its own — once a device's public key is written into the server config it stays valid forever, regardless of how old the QR code or `.conf` file is. Use `remove-client.sh` when you no longer want a device to be able to connect.
+
 ## Scripts
 
  * `bin/allow-my-ip.sh wireguard [ip]` — allow an IP (default: your current public IP) through the security group on UDP 51820
  * `bin/allow-my-ip.sh wireguard --clean` — revoke all IPs previously allowed for WireGuard
  * `wireguard/setup-server.sh` — install and configure WireGuard on the running Linux instance
  * `wireguard/add-client.sh <name> [--text]` — add a new client peer and print its config as a QR code (or raw text with `--text`)
+ * `wireguard/list-clients.sh` — list all configured peers with their internal IP and last handshake time
+ * `wireguard/remove-client.sh <name>` — remove a client peer, revoking its access immediately
  * `wireguard/stop-server.sh` — stop and disable the WireGuard service without touching the peer configuration
